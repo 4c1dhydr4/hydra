@@ -15,7 +15,7 @@ config = {
 	'instagram':{
 		'active': True,
 		'username': 'blackhydra__',
-		'password': '********',
+		'password': 'postgres',
 	},
 	'sensors':{
 		'humidity':{ #Valores 

@@ -2,6 +2,7 @@ from config import config
 import arduino as r2d2
 import database as db
 from datetime import datetime
+from instapy_cli import client as instapy
 import tweepy
 import telegram
 import logging
@@ -59,9 +60,17 @@ class Hydra:
 		else:
 			return 'No serial port available'
 
+	def post_instagram(self):
+		self.add_log("Trying on Instagram: {}".format(self.timestamp()))
+		image = 'rolling.jpg'
+		text = 'Testing v2.0' + '\r\n' + '#rolling #stones'
+		with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
+			instagram.upload(image, text)
+			self.add_log("Post on Instagram: {} - {}".format(text, self.timestamp()))
+
 	def post_twitter(self, text):
 		try:
-			self.add_log("Try Posting on Twitter: {}".format(text))
+			self.add_log("Trying Posting on Twitter: {}".format(text))
 			if len(text)<140:
 				self.tweepy.update_status(text)
 				self.add_log('Post on Twitter: {} - {}'.format(self.timestamp(), text))
@@ -75,7 +84,7 @@ class Hydra:
 	def send_text_to_me(self, text):
 		try:
 			for chat_id in self.config['telegram']['chats_id']:
-				self.add_log("Try Sending Message to Chat #{}: {}".format(chat_id, text))
+				self.add_log("Trying Sending Message to Chat #{}: {}".format(chat_id, text))
 				self.telepy.send_message(chat_id=chat_id, text=text)
 				self.add_log("Telegram message correctly sended to chat id #{}: {}".format(chat_id, text))
 		except Exception as e:

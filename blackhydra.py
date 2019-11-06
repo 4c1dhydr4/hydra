@@ -6,6 +6,10 @@ from instapy_cli import client as instapy
 import tweepy
 import telegram
 import logging
+import cv2
+from matplotlib import pyplot as plt
+from PIL import Image
+from tools import *
 
 class Hydra:
 	def __init__(self, name):
@@ -16,6 +20,7 @@ class Hydra:
 		self.config = config
 		self.tweepy = None
 		self.telepy = None
+		self.photo_id = 0
 
 		self.initialize()
 
@@ -60,13 +65,29 @@ class Hydra:
 		else:
 			return 'No serial port available'
 
+	def take_picture(self):
+		video_capture = cv2.VideoCapture(0)
+		if not video_capture.isOpened():
+			# raise Exception("Could not open video device")
+			return False, None
+		ret, frame = video_capture.read()
+		video_capture.release()
+		im = Image.fromarray(crop_center(frame[:,:,::-1],350,350))
+		picture_name = "pictures/{}.png".format(self.photo_id)
+		im.save(picture_name)
+		self.photo_id += 1
+		return True, picture_name
+
 	def post_instagram(self):
 		self.add_log("Trying on Instagram: {}".format(self.timestamp()))
-		image = 'rolling.jpg'
-		text = 'Testing v2.0' + '\r\n' + '#rolling #stones'
-		with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
-			instagram.upload(image, text)
-			self.add_log("Post on Instagram: {} - {}".format(text, self.timestamp()))
+		pic_ok, image = self.take_picture()
+		text = 'First Picture'
+		if pic_ok:
+			with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
+				instagram.upload(image, text)
+				self.add_log("Post on Instagram: {} - {}".format(text, self.timestamp()))
+		else:
+			self.add_log("Taken picture error - {}".format(self.timestamp()))
 
 	def post_twitter(self, text):
 		try:
@@ -89,6 +110,9 @@ class Hydra:
 				self.add_log("Telegram message correctly sended to chat id #{}: {}".format(chat_id, text))
 		except Exception as e:
 			self.manage_exception(e)
+
+	def send_picture_to_me(self):
+		image = self.take_picture()
 
 	def timestamp(self):
 		now = datetime.now()

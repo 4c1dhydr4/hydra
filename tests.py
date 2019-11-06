@@ -1,4 +1,3 @@
-# import database as db
 from blackhydra import Hydra
 
 hydra = Hydra('hydra')
@@ -7,4 +6,5 @@ hydra = Hydra('hydra')
 # hydra.post_twitter('Testing v2.0')
 # hydra.send_text_to_me('Test')
 # hydra.display_logs()
+# print(hydra.take_picture())
 hydra.post_instagram()

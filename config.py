@@ -25,7 +25,7 @@ config = {
 			'good': 300,
 			'much': 160,
 			'twitter_post': [(10,30), (18,00)],
-			'instagram_post': [(10,40), (18,10)],
+			'instagram_post': [(10,40), (18,10), (18,16)],
 			'telegram_post': [(10,00), (18,20)],
 		},
 		'temperature':{ #C°
@@ -65,7 +65,7 @@ config = {
 	},
 }
 
-EVALUATION = {
+CATEGORY = {
 	'bad': 1,
 	'ok': 2,
 	'good': 3,

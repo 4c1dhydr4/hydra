@@ -68,23 +68,26 @@ class Hydra:
 			return r2d2.get_sensors(self.port)
 		else:
 			self.manage_exception('No serial port available')
-			return False, {'H': 1023, 'L': 0, 'M': 0, 'T': 0, 'A': 0}
+			return False, {'H': 1023, 'L': 6, 'M': 0, 'T': 20, 'A': 85}
 
 	def take_picture(self):
+		self.add_log("Trying to take a picture: {}".format(timestamp()))
 		video_capture = cv2.VideoCapture(0)
 		if not video_capture.isOpened():
 			# raise Exception("Could not open video device")
 			return False, None
 		ret, frame = video_capture.read()
 		video_capture.release()
-		im = Image.fromarray(crop_center(frame[:,:,::-1],350,350))
+		# im = Image.fromarray(crop_center(frame[:,:,::-1],350,350))
+		im = Image.fromarray(frame[:,:,::-1])
 		picture_name = "pictures/{}.png".format(self.photo_id)
 		im.save(picture_name)
 		self.photo_id += 1
+		self.add_log("Picture {} taken: {}".format(self.photo_id, timestamp()))
 		return True, picture_name
 
 	def post_instagram(self, text):
-		self.add_log("Trying on Instagram: {}".format(timestamp()))
+		self.add_log("Trying post on Instagram: {}".format(timestamp()))
 		pic_ok, image = self.take_picture()
 		if pic_ok:
 			with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
@@ -116,8 +119,17 @@ class Hydra:
 			self.manage_exception(e)
 
 	def send_picture_to_me(self):
-		image = self.take_picture()
-		#Implement telegram picture
+		ok, image_path = self.take_picture()
+		if ok:
+			try:
+				for chat_id in self.config['telegram']['chats_id']:
+					self.add_log("Trying Sending Photo to Chat #{}".format(chat_id))
+					self.telepy.send_photo(chat_id=chat_id, photo=open(image_path, 'rb'))
+					self.add_log("Telegram photo correctly sended to chat id #{}".format(chat_id))
+			except Exception as e:
+				self.manage_exception(e)
+		else:
+			self.add_log("Picture to Telegram error - {}".format(timestamp()))
 
 	def set_config(self):
 		try:
@@ -130,13 +142,21 @@ class Hydra:
 			self.manage_exception(e)
 
 	def run(self):
+		self.add_log("Initializing Hydra - {}".format(timestamp()))
 		self.set_config()
 		i = 0
-		# while self.active:
-		self.set_config()
-		success, sensors = self.read_serial()
-		self.hydra.post_humidity(self.config['sensors']['humidity'], sensors['H'])
-		i += 1
+		self.add_log("Running - {}".format(timestamp()))
+		while self.active:
+			self.set_config()
+			success, sensors = self.read_serial()
+			self.hydra.post_humidity(self, sensors['H'])
+			self.hydra.post_temperature(self, sensors['T'])
+			self.hydra.post_light(self, sensors['L'])
+			self.hydra.post_ambient(self, sensors['A'])
+			self.hydra.movement_alert(self, sensors['M'])
+			i += 1
+			time.sleep(1)
+		self.add_log("Kernel disabled - {}".format(timestamp()))
 
 
 

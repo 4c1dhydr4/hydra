@@ -14,7 +14,7 @@ def get_sensors(com):
 			sensors[split[0]] = int(split[1])
 		return True, sensors
 	except:
-		return False, {'H': 0, 'L': 0, 'M': 0, 'T': 0, 'A': 0}
+		return False, {'H': 1023, 'L': 0, 'M': 0, 'T': 0, 'A': 0}
 
 def available_ports():
 	import sys

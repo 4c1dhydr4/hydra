@@ -1,7 +1,7 @@
-from config import config
+import time
+from config import config, get_db_config
 import arduino as r2d2
 import database as db
-from datetime import datetime
 from instapy_cli import client as instapy
 import tweepy
 import telegram
@@ -10,6 +10,7 @@ import cv2
 from matplotlib import pyplot as plt
 from PIL import Image
 from tools import *
+import algorithm as hydra
 
 class Hydra:
 	def __init__(self, name):
@@ -21,20 +22,23 @@ class Hydra:
 		self.tweepy = None
 		self.telepy = None
 		self.photo_id = 0
+		self.db = db
+		self.hydra = hydra
 
 		self.initialize()
 
 	def initialize(self):
 		try:
 			self.active = True
-			self.port = r2d2.available_ports()[0]
 			self.tweepy = self.set_tweepy()
 			self.telepy = self.set_telepy()
+			self.set_config()
+			self.port = r2d2.available_ports()[0]
 		except Exception as e:
 			self.manage_exception(e)
 
 	def manage_exception(self, e):
-		self.add_log('({}) Error: {}'.format(self.timestamp(), str(e)))
+		self.add_log('({}) Error: {}'.format(timestamp(), str(e)))
 		# self.display_logs()
 
 	def display_logs(self):
@@ -63,7 +67,8 @@ class Hydra:
 		if self.port:
 			return r2d2.get_sensors(self.port)
 		else:
-			return 'No serial port available'
+			self.manage_exception('No serial port available')
+			return False, {'H': 1023, 'L': 0, 'M': 0, 'T': 0, 'A': 0}
 
 	def take_picture(self):
 		video_capture = cv2.VideoCapture(0)
@@ -78,23 +83,22 @@ class Hydra:
 		self.photo_id += 1
 		return True, picture_name
 
-	def post_instagram(self):
-		self.add_log("Trying on Instagram: {}".format(self.timestamp()))
+	def post_instagram(self, text):
+		self.add_log("Trying on Instagram: {}".format(timestamp()))
 		pic_ok, image = self.take_picture()
-		text = 'First Picture'
 		if pic_ok:
 			with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
 				instagram.upload(image, text)
-				self.add_log("Post on Instagram: {} - {}".format(text, self.timestamp()))
+				self.add_log("Post on Instagram: {} - {}".format(text, timestamp()))
 		else:
-			self.add_log("Taken picture error - {}".format(self.timestamp()))
+			self.add_log("Taken picture error - {}".format(timestamp()))
 
 	def post_twitter(self, text):
 		try:
 			self.add_log("Trying Posting on Twitter: {}".format(text))
 			if len(text)<140:
 				self.tweepy.update_status(text)
-				self.add_log('Post on Twitter: {} - {}'.format(self.timestamp(), text))
+				self.add_log('Post on Twitter: {} - {}'.format(timestamp(), text))
 				return True
 			else:
 				print ("Text > 140 characters")
@@ -113,10 +117,28 @@ class Hydra:
 
 	def send_picture_to_me(self):
 		image = self.take_picture()
+		#Implement telegram picture
 
-	def timestamp(self):
-		now = datetime.now()
-		return '{}/{}/{} {}:{}'.format(now.day, now.month, now.year, now.hour, now.minute)
+	def set_config(self):
+		try:
+			self.config = get_db_config(self.config, db.read_config())
+			if self.config['active']:
+				self.active = True
+			else:
+				self.active = False
+		except Exception as e:
+			self.manage_exception(e)
+
+	def run(self):
+		self.set_config()
+		i = 0
+		# while self.active:
+		self.set_config()
+		success, sensors = self.read_serial()
+		self.hydra.post_humidity(self.config['sensors']['humidity'], sensors['H'])
+		i += 1
+
+
 
 
 

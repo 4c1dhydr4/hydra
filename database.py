@@ -1,17 +1,13 @@
 import sqlite3
-from sqlite3 import Error
 
-def sql_connection(): 
-	try:
-		con = sqlite3.connect('db.sqlite3')
-		return con
-	except Error:
-		print(Error)
+def sql_connection():
+	con = sqlite3.connect('db.sqlite3')
+	return con
 
-def sql_table(con): 
-	cursorObj = con.cursor()
-	cursorObj.execute("CREATE TABLE employees(id integer PRIMARY KEY, name text, salary real, department text, position text, hireDate text)")
-	con.commit()
-
-# con = sql_connection() 
-# sql_table(con)
+def read_config():
+	connection = sql_connection() 
+	cursor = connection.cursor()
+	cursor.execute("SELECT * FROM plants_configuration")
+	rows = cursor.fetchall()
+	connection.close()
+	return rows[0]

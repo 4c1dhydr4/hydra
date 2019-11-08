@@ -1,5 +1,0 @@
-from blackhydra import Hydra
-
-	
-hydra = Hydra('hydra')
-hydra.run()

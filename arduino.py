@@ -21,6 +21,6 @@ def available_ports():
 	from serial.tools import list_ports
 	if sys.platform == 'win32':
 		coms = [item.device for item in list_ports.comports()]
-	elif sys.platform == 'linux2':
+	elif sys.platform == 'linux':
 		coms = [item[0] for item in list_ports.comports()]
 	return coms

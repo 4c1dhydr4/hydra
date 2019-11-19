@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 from config import CATEGORY
+from database import read_phrase
 
 def ev_humidity(humidity_dic, sensor_value):
 	if sensor_value >= humidity_dic['bad']:
@@ -71,32 +72,37 @@ def ev_hours(hours):
 			return True
 	return False
 
-def get_phrase(category, text, sensor):
+def get_phrase(category, sensor):
 	# Implementar toma de frases desde db
 	if category == 1:
-		return 'Niveles Bajos de {} - {}'.format(text, sensor)
+		return read_phrase(sensor, 'bad')
+		# return 'Niveles Bajos de {} - {}'.format(text, sensor)
 	if category == 2:
-		return 'Niveles Neutros de {} - {}'.format(text, sensor)
+		return read_phrase(sensor, 'ok')
+		# return 'Niveles Neutros de {} - {}'.format(text, sensor)
 	if category == 3:
-		return 'Niveles Buenos de {} - {}'.format(text, sensor)
+		return read_phrase(sensor, 'good')
+		# return 'Niveles Buenos de {} - {}'.format(text, sensor)
 	if category == 4:
-		return 'Exceso de {} - {}'.format(text, sensor)
+		return read_phrase(sensor, 'much')
+		# return 'Exceso de {} - {}'.format(text, sensor)
 	if category == 5:
-		return 'Alerta de {} - {}'.format(text, sensor)
+		return read_phrase(sensor, 'alert')
+		# return 'Alerta de {} - {}'.format(text, sensor)
 	else:
-		return 'Problemas en el Kernel'
+		return 'Problemas en el Kernel de Hydra'
 
 
-def ev(hydra, sensor, category, text, sensor_value):
+def ev(hydra, sensor, category, sensor_value):
 	if hydra.config['sensors'][sensor]['active']:
 		if hydra.config['twitter']['active']:
 			if ev_hours(hydra.config['sensors'][sensor]['twitter_post']):
-				hydra.post_twitter(get_phrase(category, text, sensor_value))
+				hydra.post_twitter(get_phrase(category, sensor))
 				print('Sleeping for 60 seconds')
 				time.sleep(60)
 		if hydra.config['telegram']['active']:
 			if ev_hours(hydra.config['sensors'][sensor]['telegram_post']):
-				hydra.send_text_to_me(get_phrase(category, text, sensor_value))
+				hydra.send_text_to_me(get_phrase(category, sensor))
 				print('Sleeping for 60 seconds')
 				time.sleep(60)
 		if hydra.config['instagram']['active']:
@@ -105,25 +111,27 @@ def ev(hydra, sensor, category, text, sensor_value):
 				print('Sleeping for 60 seconds')
 				time.sleep(60)
 
-
-
 def post_humidity(hydra, sensor_value):
-	ev(hydra, 'humidity', ev_humidity(hydra.config['sensors']['humidity'], sensor_value),'humedad', sensor_value)
+	ev(hydra, 'humidity', ev_humidity(hydra.config['sensors']['humidity'], sensor_value), sensor_value)
 
 def post_temperature(hydra, sensor_value):
-	ev(hydra, 'temperature', ev_temperature(hydra.config['sensors']['temperature'], sensor_value),'temperatura', sensor_value)
+	ev(hydra, 'temperature', ev_temperature(hydra.config['sensors']['temperature'], sensor_value),sensor_value)
 
 def post_light(hydra, sensor_value):
-	ev(hydra, 'light', ev_light(hydra.config['sensors']['light'], sensor_value),'luz', sensor_value)
+	ev(hydra, 'light', ev_light(hydra.config['sensors']['light'], sensor_value),sensor_value)
 
 def post_ambient(hydra, sensor_value):
-	ev(hydra, 'ambient', ev_ambient(hydra.config['sensors']['ambient'], sensor_value),'humedad ambiental', sensor_value)
+	ev(hydra, 'ambient', ev_ambient(hydra.config['sensors']['ambient'], sensor_value),sensor_value)
 
 def movement_alert(hydra, sensor_value):
 	move_config = hydra.config['sensors']['movement']
 	category = ev_movement(move_config, sensor_value)
 	if category == 5 and move_config['active']:
-		hydra.send_picture_to_me()
+		if hydra.config['telegram']['active']:
+			hydra.send_text_to_me(get_phrase(category, 'mov'))
+			hydra.send_picture_to_me()
+		if hydra.config['twitter']['active']:
+			hydra.post_twitter(get_phrase(category, 'mov'))
 		print('Sleeping for 20 seconds')
 		time.sleep(20)
 

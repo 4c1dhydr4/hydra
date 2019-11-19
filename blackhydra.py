@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 from PIL import Image
 from tools import *
 import algorithm as hydra
+import netifaces as ni
+from lcd import lcd_print 
 
 class Hydra:
 	def __init__(self, name):
@@ -34,13 +36,14 @@ class Hydra:
 			self.telepy = self.set_telepy()
 			self.set_config()
 			self.port = r2d2.available_ports()[0]
+			lcd_print('Kernel Ok')
 		except Exception as e:
 			self.manage_exception(e)
 
 	def manage_exception(self, e):
 		self.add_log('({}) Error: {}'.format(timestamp(), str(e)))
-		# self.display_logs()
-
+		lcd_print('Error Logged')
+		
 	def display_logs(self):
 		for log in self.logs:
 			print(log)
@@ -84,6 +87,7 @@ class Hydra:
 		im.save(picture_name)
 		self.photo_id += 1
 		self.add_log("Picture {} taken: {}".format(self.photo_id, timestamp()))
+		lcd_print('Picture Sended')
 		return True, picture_name
 
 	def post_instagram(self, text):
@@ -93,6 +97,7 @@ class Hydra:
 			with instapy(self.config['instagram']['username'], self.config['instagram']['password']) as instagram:
 				instagram.upload(image, text)
 				self.add_log("Post on Instagram: {} - {}".format(text, timestamp()))
+				lcd_print('Instagram Post')
 		else:
 			self.add_log("Taken picture error - {}".format(timestamp()))
 
@@ -102,6 +107,7 @@ class Hydra:
 			if len(text)<140:
 				self.tweepy.update_status(text)
 				self.add_log('Post on Twitter: {} - {}'.format(timestamp(), text))
+				lcd_print('Twitter Post')
 				return True
 			else:
 				print ("Text > 140 characters")
@@ -115,6 +121,7 @@ class Hydra:
 				self.add_log("Trying Sending Message to Chat #{}: {}".format(chat_id, text))
 				self.telepy.send_message(chat_id=chat_id, text=text)
 				self.add_log("Telegram message correctly sended to chat id #{}: {}".format(chat_id, text))
+				lcd_print('Telegram Message')
 		except Exception as e:
 			self.manage_exception(e)
 
@@ -126,10 +133,20 @@ class Hydra:
 					self.add_log("Trying Sending Photo to Chat #{}".format(chat_id))
 					self.telepy.send_photo(chat_id=chat_id, photo=open(image_path, 'rb'))
 					self.add_log("Telegram photo correctly sended to chat id #{}".format(chat_id))
+					lcd_print('Photo Sended')
 			except Exception as e:
 				self.manage_exception(e)
 		else:
 			self.add_log("Picture to Telegram error - {}".format(timestamp()))
+
+	def get_ip(self):
+		try:
+			time.sleep(20)
+			interface = ni.ifaddresses('wlan0')
+			ip = interface[ni.AF_INET][0]['addr']
+		except:
+			ip = "192.168.1.-1"
+		return ip
 
 	def set_config(self):
 		try:
@@ -143,6 +160,7 @@ class Hydra:
 
 	def run(self):
 		self.add_log("Initializing Hydra - {}".format(timestamp()))
+		lcd_print(self.get_ip())
 		self.set_config()
 		i = 0
 		self.add_log("Running - {}".format(timestamp()))

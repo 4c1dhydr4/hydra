@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from config import CATEGORY
 from database import read_phrase
+from lcd import lcd_print 
 
 def ev_humidity(humidity_dic, sensor_value):
 	if sensor_value >= humidity_dic['bad']:
@@ -127,6 +128,7 @@ def movement_alert(hydra, sensor_value):
 	move_config = hydra.config['sensors']['movement']
 	category = ev_movement(move_config, sensor_value)
 	if category == 5 and move_config['active']:
+		lcd_print('Movement alert\nactive')
 		if hydra.config['telegram']['active']:
 			hydra.send_text_to_me(get_phrase(category, 'mov'))
 			hydra.send_picture_to_me()

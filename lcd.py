@@ -23,14 +23,14 @@ def lcd_print(text):
 	if OS == 'win':
 		return print(text)
 	elif OS == 'linux':
-		charts = len(text)
+		# charts = len(text)
 		lcd.clear()
-		if charts < 16:
-			pass
-			lcd.message(text)
-		elif charts <32:
-			lcd.message(text)
-			for i in range(charts):
-				time.sleep(0.5)
-				lcd.move_left()
-			lcd.clear()
+		lcd.message(text)
+		# if charts < 16:
+		# 	lcd.message(text)
+		# elif charts <32:
+		# 	lcd.message(text)
+		# 	for i in range(charts):
+		# 		time.sleep(0.5)
+		# 		lcd.move_left()
+		# 	lcd.clear()

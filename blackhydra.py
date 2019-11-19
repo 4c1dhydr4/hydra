@@ -159,7 +159,7 @@ class Hydra:
 			self.manage_exception(e)
 
 	def run(self):
-		lcd_print('Initializing Hydra')
+		lcd_print('Initializing\nhydra')
 		self.add_log("Initializing Hydra - {}".format(timestamp()))
 		lcd_print('Local IP:\n' + self.get_ip())
 		self.set_config()

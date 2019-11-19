@@ -90,6 +90,8 @@ def get_phrase(category, sensor):
 	if category == 5:
 		return read_phrase(sensor, 'alert')
 		# return 'Alerta de {} - {}'.format(text, sensor)
+	if category == 7:
+		return read_phrase('twitter', 'ok')
 	else:
 		return 'Problemas en el Kernel de Hydra'
 
@@ -129,11 +131,17 @@ def movement_alert(hydra, sensor_value):
 	category = ev_movement(move_config, sensor_value)
 	if category == 5 and move_config['active']:
 		lcd_print('Movement alert\nactive')
+		time.sleep(2)
 		if hydra.config['telegram']['active']:
 			hydra.send_text_to_me(get_phrase(category, 'mov'))
 			hydra.send_picture_to_me()
 		if hydra.config['twitter']['active']:
 			hydra.post_twitter(get_phrase(category, 'mov'))
-		print('Sleeping for 20 seconds')
-		time.sleep(20)
+		print('Sleeping for 5 seconds')
+		time.sleep(5)
+
+import random
+def get_random():
+	return get_phrase(7, 'ok')
+
 

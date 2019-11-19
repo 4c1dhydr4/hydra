@@ -36,12 +36,13 @@ class Hydra:
 			self.telepy = self.set_telepy()
 			self.set_config()
 			self.port = r2d2.available_ports()[0]
-			lcd_print('Kernel Ok')
 		except Exception as e:
 			self.manage_exception(e)
 
 	def manage_exception(self, e):
-		self.add_log('({}) Error: {}'.format(timestamp(), str(e)))
+		text = '({}) Error: {}'.format(timestamp(), str(e))
+		self.add_log(text)
+		self.send_text_to_me(text)
 		lcd_print('Error Logged')
 		
 	def display_logs(self):
@@ -49,8 +50,8 @@ class Hydra:
 			print(log)
 
 	def add_log(self, log):
-		print(log)
-		self.logs.append(str(log))
+		# self.logs.append(str(log))
+		self.db.insert_log(str(log))
 
 	def set_tweepy(self):
 		auth = tweepy.OAuthHandler(
@@ -113,7 +114,7 @@ class Hydra:
 				print ("Text > 140 characters")
 				return False
 		except Exception as e:
-			self.manage_exception(e)
+			self.manage_exception('Twitter ' + str(e))
 
 	def send_text_to_me(self, text):
 		try:
@@ -158,16 +159,25 @@ class Hydra:
 		except Exception as e:
 			self.manage_exception(e)
 
+	def lcd_print(self, text):		
+		lcd_print(text)
+
 	def run(self):
 		lcd_print('Initializing\nhydra')
 		self.add_log("Initializing Hydra - {}".format(timestamp()))
-		lcd_print('Local IP:\n' + self.get_ip())
+		ip = 'Local IP:\n' + self.get_ip()
+		self.db.insert_log(ip)
+		lcd_print(ip)
+		time.sleep(5)
 		self.set_config()
 		i = 0
 		self.add_log("Running - {}".format(timestamp()))
+		lcd_print('hydra running')
 		while self.active:
 			self.set_config()
 			success, sensors = self.read_serial()
+			if success:
+				self.db.insert_sensors(sensors)
 			self.hydra.post_humidity(self, sensors['H'])
 			self.hydra.post_temperature(self, sensors['T'])
 			self.hydra.post_light(self, sensors['L'])

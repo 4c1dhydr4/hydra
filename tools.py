@@ -8,4 +8,4 @@ def crop_center(img,cropx,cropy):
 
 def timestamp():
 	now = datetime.now()
-	return '{}/{}/{} {}:{}'.format(now.day, now.month, now.year, now.hour, now.minute)
+	return '{}/{}/{} {}:{}:{}'.format(now.day, now.month, now.year, now.hour, now.minute, now.second)

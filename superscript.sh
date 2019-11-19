@@ -16,5 +16,6 @@ cd /home/pi/hydra/
 #python3 alerts_script.py > /home/pi/blackhydra/logs/alerts_script_log &
 python3 manage.py runserver 0.0.0.0:8080 > /home/pi/hydra/logs/django.log &
 python3 main.py > /home/pi/hydra/logs/hydra.log &
+python3 telegram_bot.py > /home/pi/hydra/logs/telegram.log &
 cd /
 

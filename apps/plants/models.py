@@ -39,3 +39,27 @@ class Configuration(models.Model):
 
 	def __str__(self):
 		return '{}'.format(self.id)
+
+
+class SensorValue(models.Model):
+	temperature = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	humidity = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	light = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	mov = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	ambient = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	
+	def __str__(self):
+		return '{}'.format(self.id)
+
+
+class Log(models.Model):
+	log = models.CharField(
+		max_length=150, 
+		verbose_name="Logs")
+
+	class Meta:
+		ordering = ('-id',)
+
+	def __str__(self):
+		return '({}) {}'.format(self.id, self.log)
+

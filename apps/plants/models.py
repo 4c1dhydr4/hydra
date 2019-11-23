@@ -43,10 +43,10 @@ class Configuration(models.Model):
 
 class SensorValue(models.Model):
 	temperature = models.PositiveSmallIntegerField(verbose_name="Temperatura")
-	humidity = models.PositiveSmallIntegerField(verbose_name="Temperatura")
-	light = models.PositiveSmallIntegerField(verbose_name="Temperatura")
-	mov = models.PositiveSmallIntegerField(verbose_name="Temperatura")
-	ambient = models.PositiveSmallIntegerField(verbose_name="Temperatura")
+	humidity = models.PositiveSmallIntegerField(verbose_name="Humedad")
+	light = models.PositiveSmallIntegerField(verbose_name="Luz")
+	mov = models.PositiveSmallIntegerField(verbose_name="Movimiento")
+	ambient = models.PositiveSmallIntegerField(verbose_name="Humedad Ambiental")
 	
 	def __str__(self):
 		return '{}'.format(self.id)
